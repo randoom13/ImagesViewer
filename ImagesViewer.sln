@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImagesViewer", "ImagesViewer\ImagesViewer.csproj", "{90355CD8-7BCE-4942-BE1B-28321978293B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90355CD8-7BCE-4942-BE1B-28321978293B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90355CD8-7BCE-4942-BE1B-28321978293B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90355CD8-7BCE-4942-BE1B-28321978293B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90355CD8-7BCE-4942-BE1B-28321978293B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

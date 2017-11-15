@@ -1,0 +1,23 @@
+﻿<mahApps:MetroWindow x:Class="ImagesViewer.Views.MainView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ImagesViewer.Views"
+        xmlns:mahApps="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:cal="http://www.caliburnproject.org"
+        NonActiveWindowTitleBrush="{StaticResource WindowTitleBrush}"
+        WindowTitleBrush="{StaticResource WindowTitleBrush}"
+        EnableDWMDropShadow="True"
+        ResizeMode="CanResizeWithGrip"
+        Title="Images Viewer" 
+        Height="600"  Width="800">
+    <mahApps:MetroWindow.InputBindings>
+        <KeyBinding Gesture="Esc"
+                    Command="{Binding CancelActiveViewCommand}" />
+    </mahApps:MetroWindow.InputBindings>
+    <Grid Margin="10">
+        <ContentControl x:Name="ActiveItem"
+                        Background="White"/>
+    </Grid>
+</mahApps:MetroWindow>

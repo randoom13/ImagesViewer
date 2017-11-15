@@ -1,0 +1,64 @@
+﻿<UserControl x:Class="ImagesViewer.Views.ImagesListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ImagesViewer.Views"
+             xmlns:controls="clr-namespace:ImagesViewer.Controls"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:dragDrop="urn:gong-wpf-dragdrop"
+             xmlns:cal="http://www.caliburnproject.org">
+    <Grid>
+        <ListBox
+             SelectedItem="{Binding SelectedImage, Mode=TwoWay}"
+             dragDrop:DragDrop.IsDropTarget="True"
+             ScrollViewer.CanContentScroll="True"
+             ItemsSource="{Binding Images}"
+             dragDrop:DragDrop.DropHandler="{Binding DropHandler}">
+            <i:Interaction.Behaviors>
+            <controls:ListBoxVisibleItemsRangeBehaviour
+                VisibleItemsRange="{Binding VisibleItemsRange, Mode=OneWayToSource}"/>
+            </i:Interaction.Behaviors>
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+                    <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+                    <Setter Property="cal:Message.Attach"
+                            Value="[Event PreviewMouseDown]=[Action OnPreviewMouseDown($eventArgs)]"/>
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <controls:VirtualizingWrapPanel Orientation="Vertical"
+                                                    ItemHeight="100" ItemWidth="100"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="5"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            BorderThickness="1"
+                            BorderBrush="Gray">
+                        <DockPanel LastChildFill="True">
+                            <TextBlock HorizontalAlignment="Center"
+                                       Text="{Binding Index}"
+                                       DockPanel.Dock="Top"/>
+                            <ContentControl 
+                                DockPanel.Dock="Bottom"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                    cal:View.Model="{Binding}"
+                        DataContext="{Binding }" />
+                        </DockPanel>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBlock Text="Drop image file(s) to add the image(s)"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   TextWrapping="WrapWithOverflow"
+                   Visibility="{Binding EmptyImagesList, Converter={StaticResource BoolToVisibility}}"/>
+    </Grid>
+</UserControl>
