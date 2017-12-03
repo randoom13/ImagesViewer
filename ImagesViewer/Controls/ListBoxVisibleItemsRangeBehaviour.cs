@@ -13,6 +13,15 @@ namespace ImagesViewer.Controls
     public class ListBoxVisibleItemsRangeBehaviour : Behavior<ListBox>
     {
         #region VisibleItemsRange Property
+        public bool HasVisibleScroll
+        {
+            get { return (bool)GetValue(HasVisibleScrollProperty); }
+            set { SetValue(HasVisibleScrollProperty, value); }
+        }
+
+        public static readonly DependencyProperty HasVisibleScrollProperty =
+    DependencyProperty.Register("HasVisibleScroll", typeof(bool), typeof(ListBoxVisibleItemsRangeBehaviour), new PropertyMetadata(false));
+
 
         public Range VisibleItemsRange
         {
@@ -21,7 +30,8 @@ namespace ImagesViewer.Controls
         }
 
         public static readonly DependencyProperty VisibleItemsRangeProperty =
-            DependencyProperty.Register("VisibleItemsRange", typeof(Range), typeof(ListBoxVisibleItemsRangeBehaviour));
+            DependencyProperty.Register("VisibleItemsRange", typeof(Range), typeof(ListBoxVisibleItemsRangeBehaviour)
+            );
 
         #endregion
 
@@ -64,7 +74,9 @@ namespace ImagesViewer.Controls
 
         private void RefreshRange() 
         {
-            if (_virtualizingStackPanel.ScrollOwner.ComputedVerticalScrollBarVisibility == Visibility.Visible)
+            var scrollVisible = _virtualizingStackPanel.ScrollOwner.ComputedVerticalScrollBarVisibility == Visibility.Visible;
+            HasVisibleScroll = scrollVisible;
+            if (scrollVisible)
             {
                 var visibleCount = _virtualizingStackPanel.Children.Count;
                 var index = _virtualizingStackPanel.Children.OfType<ListBoxItem>().First().DataContext;
