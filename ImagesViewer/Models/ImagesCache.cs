@@ -36,28 +36,32 @@ namespace ImagesViewer.Models
             _loadingImageCTS = new CancellationTokenSource();
         }
 
-        public void RemoveImageFor(string path)
+        public void RemoveImage(IImageHolder imageHolder)
         {
-            LoadedImageInfoResult res;
-            _imageInfosLibrary.Remove(path);
+            _imageInfosLibrary.Remove(imageHolder.Path);
         }
 
-        public void LeaveImagesOnlyIn(IEnumerable<IImageHolder> availableHolders)
-        {
-            _autoLoadingPreviewImage = false;
-            _loadingImageCTS.Cancel();
-            _loadingImageCTS = new CancellationTokenSource();
+        public bool ShowAllPreviewImages { get; set; }
 
-            var visiblePaths = availableHolders.Select(i => i.Path).Distinct().ToList();
+        public void LoadImages(IEnumerable<IImageHolder> availableImages)
+        {
+            foreach (var image in availableImages.Where(h => !h.ShowImage))
+                image.ReloadAsync(this);
+        }
+
+        public void LeaveOnlyImages(IEnumerable<IImageHolder> availableImages)
+        {
+            StopLoading();
+
+            var visiblePaths = availableImages.Select(i => i.Path).Distinct().ToList();
             _imageInfosLibrary = _imageInfosLibrary.Where(i => visiblePaths.Contains(i.Key)).
-                ToDictionary(it=>it.Key,it=>it.Value);
-            foreach (var holder in availableHolders.Where(h => !h.ShowImage))
-                holder.ReloadAsync(this);
+                ToDictionary(it => it.Key, it => it.Value);
+            LoadImages(availableImages);
         }
 
-        public void ReloadImages(IEnumerable<IImageHolder> availableHolders)
+        public void ReloadPreviewImages(IEnumerable<IImageHolder> availableImages)
         {
-            foreach (var holder in availableHolders)
+            foreach (var holder in availableImages)
             {
                 holder.ViewMode = ViewMode.Preview;
                 if (!holder.ShowImage)
@@ -65,14 +69,14 @@ namespace ImagesViewer.Models
             }
         }
 
-        public bool HasImageFile(string path)
+        public bool ImageExists(IImageHolder image)
         {
-            return _fileOperationProxy.FileExists(path);
+            return _fileOperationProxy.FileExists(image.Path);
         }
 
-        public bool CanGetImageInfo(object sender, IImageHolder imageHolder)
+        public bool UnableToGetImageInfo(object sender, IImageHolder image)
         {
-            return !(!_autoLoadingPreviewImage && sender != this && imageHolder.ViewMode == ViewMode.Preview);
+            return !ShowAllPreviewImages && sender != this && image.ViewMode == ViewMode.Preview;
         }
 
         public Task<BitmapImageInfo> GetImageInfoAsync(object sender, IImageHolder imageHolder)
@@ -80,38 +84,42 @@ namespace ImagesViewer.Models
             return GetImageInfoAsync(sender, imageHolder, _loadingImageCTS.Token);
         }
 
-        private async Task<BitmapImageInfo> GetImageInfoAsync(object sender, IImageHolder imageHolder, CancellationToken ct)
+        private async Task<BitmapImageInfo> GetImageInfoAsync(object sender, IImageHolder image, CancellationToken ct)
         {
-            if (null == imageHolder)
+            if (null == image)
                 throw new ArgumentNullException("imageHolder");
 
-            if (!CanGetImageInfo(sender, imageHolder))
+            if (UnableToGetImageInfo(sender, image))
                 return null;
 
             LoadedImageInfoResult imageInfoResult;
-            if (_imageInfosLibrary.TryGetValue(imageHolder.Path, out imageInfoResult) &&
-                imageInfoResult.ViewMode == imageHolder.ViewMode)
+            if (_imageInfosLibrary.TryGetValue(image.Path, out imageInfoResult) &&
+                imageInfoResult.ViewMode == image.ViewMode)
                 return imageInfoResult.ImageInfo;
 
-            await _loadingImageSS.WaitAsync(ct);
+            await _loadingImagesSS.WaitAsync();
             try
             {
-                if (_imageInfosLibrary.TryGetValue(imageHolder.Path, out imageInfoResult) &&
-                    imageInfoResult.ViewMode == imageHolder.ViewMode)
+                if (ct.IsCancellationRequested)
+                    return null;
+                if (_imageInfosLibrary.TryGetValue(image.Path, out imageInfoResult) &&
+                    imageInfoResult.ViewMode == image.ViewMode)
                     return imageInfoResult.ImageInfo;
 
-                ct.ThrowIfCancellationRequested();
-                using (var loader = _fileOperationProxy.GetImageLoader(imageHolder, _previewImageHeight))
+                if (ct.IsCancellationRequested)
+                    return null;
+                using (var loader = _fileOperationProxy.GetImageLoader(image, _previewImageHeight))
                 {
                     var imageInfo = loader.LoadImageInfo();
-                    ct.ThrowIfCancellationRequested();
-                    _imageInfosLibrary[imageHolder.Path] = new LoadedImageInfoResult(imageInfo, imageHolder.ViewMode);
+                    if (ct.IsCancellationRequested)
+                        return null;
+                    _imageInfosLibrary[image.Path] = new LoadedImageInfoResult(imageInfo, image.ViewMode);
                     return imageInfo;
                 }
             }
             finally
             {
-                _loadingImageSS.Release();
+                _loadingImagesSS.Release();
             }
         }
 
@@ -119,13 +127,12 @@ namespace ImagesViewer.Models
         {
             _loadingImageCTS.Cancel();
             _loadingImageCTS.Dispose();
-            _loadingImageSS.Dispose();
+            _loadingImagesSS.Dispose();
         }
 
-        private bool _autoLoadingPreviewImage = true;
         private CancellationTokenSource _loadingImageCTS = new CancellationTokenSource();
         private readonly int _previewImageHeight = 100;
-        private SemaphoreSlim _loadingImageSS = new SemaphoreSlim(1);
+        private SemaphoreSlim _loadingImagesSS = new SemaphoreSlim(1);
         private Dictionary<string, LoadedImageInfoResult> _imageInfosLibrary = new Dictionary<string, LoadedImageInfoResult>();
         public readonly FileOperationProxy _fileOperationProxy;
     }
