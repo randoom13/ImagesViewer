@@ -16,7 +16,7 @@
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    TextAlignment="Left" 
-                     Visibility="{Binding ShowErrorMessage, Converter={StaticResource BoolToVisibility}}"
+                    Visibility="{Binding ShowErrorMessage, Converter={StaticResource BoolToVisibility}}"
                    TextWrapping="WrapWithOverflow"/>
         <mahApps:MetroProgressBar Visibility="{Binding Show, Converter={StaticResource BoolToVisibility}}" 
                                   Value="{Binding Value}"
@@ -24,10 +24,10 @@
                                   VerticalAlignment="Center"
                                   Maximum="{Binding Maximum}"
                                   DataContext="{Binding Progress}"/>
-        <mahApps:ProgressRing
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-            Visibility="{Binding ShowRing, Converter={StaticResource BoolToVisibility}}"/>    
+        <TextBlock Text="Loading..."
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   Visibility="{Binding ShowRing, Converter={StaticResource BoolToVisibility}}"/>
         <Grid.ToolTip>
             <TextBlock Text="{Binding ToolTip}"
                        TextAlignment="Left" 

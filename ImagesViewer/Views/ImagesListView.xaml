@@ -17,7 +17,8 @@
              dragDrop:DragDrop.DropHandler="{Binding DropHandler}">
             <i:Interaction.Behaviors>
             <controls:ListBoxVisibleItemsRangeBehaviour
-                VisibleItemsRange="{Binding VisibleItemsRange, Mode=OneWayToSource}"/>
+                VisibleItemsRange="{Binding VisibleItemsRange, Mode=OneWayToSource}"
+                HasVisibleScroll="{Binding  HasVisibleScroll, Mode=OneWayToSource}"/>
             </i:Interaction.Behaviors>
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
