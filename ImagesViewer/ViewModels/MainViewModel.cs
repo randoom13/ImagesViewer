@@ -14,9 +14,9 @@ namespace ImagesViewer.ViewModels
             _eventAggregator = new EventAggregator();
             _eventAggregator.Subscribe(this);
             _imagesList = new ImagesListViewModel(_eventAggregator, imagesCache, images, fileOperationProxy);
-            _ImageViewer = new ImageViewerViewModel(_eventAggregator, images, imagesCache);
+            _imageViewer = new ImageViewerViewModel(_eventAggregator, images, imagesCache);
             this.Items.Add(_imagesList);
-            this.Items.Add(_ImageViewer);
+            this.Items.Add(_imageViewer);
             this.ActiveItem = _imagesList;
             CancelActiveViewCommand = new RelayCommand<object>(_ =>
             {
@@ -28,20 +28,20 @@ namespace ImagesViewer.ViewModels
 
         public void Handle(MoveForwardEvent message)
         {
-            _ImageViewer.SelectedImage = _imagesList.SelectedImage;
-            ActiveItem = _ImageViewer;
+            _imageViewer.SelectedImage = _imagesList.SelectedImage;
+            ActiveItem = _imageViewer;
         }
 
         public void Handle(MoveBackEvent message)
         {
             ActiveItem = _imagesList;
-            _imagesList.ReloadCache();
+           _imagesList.ReloadCache();
         }
 
         public RelayCommand<object> CancelActiveViewCommand { get; private set; }
 
         private readonly ImagesListViewModel _imagesList;
-        private readonly ImageViewerViewModel _ImageViewer;
+        private readonly ImageViewerViewModel _imageViewer;
         private IEventAggregator _eventAggregator;
     }
 }

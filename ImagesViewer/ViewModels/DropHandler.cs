@@ -18,14 +18,6 @@ namespace ImagesViewer.ViewModels
             _imagesList = imagesList;
         }
 
-        private static IEnumerable<string> GetFileDropList(IDropInfo dropInfo)
-        {
-            var dataObject = dropInfo.Data as DataObject;
-            if (dataObject == null)
-                return Enumerable.Empty<string>();
-            return dataObject.GetFileDropList().OfType<string>();
-        }
-
         public void DragOver(IDropInfo dropInfo)
         {
             var dragFileList = GetFileDropList(dropInfo);
@@ -36,8 +28,17 @@ namespace ImagesViewer.ViewModels
         public void Drop(IDropInfo dropInfo)
         {
             var dragFileList = GetFileDropList(dropInfo);
-            _imagesList.AddRanged(dragFileList.Where(path => _fileOperationProxy.IsImage(path)));
+            _imagesList.AddRange(dragFileList.Where(path => _fileOperationProxy.IsImage(path)));
         }
+
+        private static IEnumerable<string> GetFileDropList(IDropInfo dropInfo)
+        {
+            var dataObject = dropInfo.Data as DataObject;
+            if (dataObject == null)
+                return Enumerable.Empty<string>();
+            return dataObject.GetFileDropList().OfType<string>();
+        }
+
         private ImagesListViewModel _imagesList;
         private FileOperationProxy _fileOperationProxy;
     }

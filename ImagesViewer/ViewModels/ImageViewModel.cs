@@ -29,6 +29,7 @@ namespace ImagesViewer.ViewModels
         }
 
         public string Path { get; private set; }
+
         public ViewMode ViewMode
         {
             get { return _viewMode; }
@@ -56,6 +57,7 @@ namespace ImagesViewer.ViewModels
                 NotifyOfPropertyChange(() => ShowErrorMessage);
             }
         }
+
         public string ToolTip
         {
             get { return _toolTip; }
@@ -75,13 +77,7 @@ namespace ImagesViewer.ViewModels
 
         public bool ShowErrorMessage { get { return !string.IsNullOrEmpty(ErrorMessage); } }
 
-        public bool ShowImage
-        {
-            get
-            {
-                return _imageInfoWeakRef.IsAlive;
-            }
-        }
+        public bool ShowImage  { get { return _imageInfoWeakRef.IsAlive; } }
 
         public BitmapImageInfo ImageInfo
         {
@@ -100,10 +96,23 @@ namespace ImagesViewer.ViewModels
             }
         }
 
+        public int Index 
+        { 
+            get { return _index; } 
+            set { _index = value; NotifyOfPropertyChange(() => Index); } 
+        }
+
+        public bool ShowRing
+        { 
+            get { return _showRing; } 
+            set { _showRing = value; NotifyOfPropertyChange(() => ShowRing); } 
+        }
+
         private void FillToolTipByImageInfo()
         {
             if (!_imageInfoWeakRef.IsAlive)
                 return;
+
             BitmapImageInfo imageInfo = _imageInfoWeakRef.Target as BitmapImageInfo;
             if (imageInfo == null)
                 return;
@@ -124,20 +133,15 @@ namespace ImagesViewer.ViewModels
                 ImageInfo = null;
                 ErrorMessage = "";
                 ToolTip = "";
-                if (!_imagesCacheHolder.HasImageFile(Path))
+                if (!_imagesCacheHolder.ImageExists(this))
                 {
                     ErrorMessage = "Can't load image.";
                     ToolTip = "No file";
                     return;
                 }
-                if (!_imagesCacheHolder.CanGetImageInfo(sender, this))
+                if (_imagesCacheHolder.UnableToGetImageInfo(sender, this))
                     return;
-                // if (ViewMode == Models.ViewMode.Full)
-                // {
-                //      Progress.Reset();
-                //      Progress.Show = true;
-                //  }
-                //   else 
+
                 ShowRing = true;
                 ErrorMessage = "";
                 ImageInfo = await _imagesCacheHolder.GetImageInfoAsync(sender, this);
@@ -154,22 +158,21 @@ namespace ImagesViewer.ViewModels
                     ShowRing = false;
                     ErrorMessage = "Can't load image.";
                     ToolTip = ex.Message;
+                    return;
                 }
-                else if (ex is UnauthorizedAccessException)
+
+                if (ex is UnauthorizedAccessException)
                 {
                     Progress.Show = false;
                     ShowRing = false;
                     ErrorMessage = "Access is denied.";
                     ToolTip = ex.Message;
+                    return;
                 }
-                 
-                if (!(ex is OperationCanceledException))
-                    throw;
+
+                throw;
             }
         }
-
-        public int Index { get { return _index; } set { _index = value; NotifyOfPropertyChange(() => Index); } }
-        public bool ShowRing { get { return _showRing; } set { _showRing = value; NotifyOfPropertyChange(() => ShowRing); } }
 
         private WeakReference _imageInfoWeakRef = new WeakReference((BitmapImageInfo)null);
         private int _index;

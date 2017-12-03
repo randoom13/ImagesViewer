@@ -11,19 +11,6 @@ namespace ImagesViewer.ViewModels
 {
     public class ImagesListViewModel : Screen
     {
-        public DropHandler DropHandler { get; private set; }
-        public bool EmptyImagesList { get { return !Images.Any(); } }
-        public BindableCollection<ImageViewModel> Images { get; private set; }
-        public ImageViewModel SelectedImage
-        {
-            get { return _selectedImage; }
-            set
-            {
-                _selectedImage = value;
-                NotifyOfPropertyChange(() => SelectedImage);
-            }
-        }
-
         public ImagesListViewModel(IEventAggregator eventAggregator,
             ImagesCache imagesCache,
             BindableCollection<ImageViewModel> images,
@@ -36,7 +23,23 @@ namespace ImagesViewer.ViewModels
             DropHandler = new DropHandler(this, fileOperationProxy);
         }
 
-        public void AddRanged(IEnumerable<string> filePaths)
+        public DropHandler DropHandler { get; private set; }
+
+        public bool EmptyImagesList { get { return !Images.Any(); } }
+
+        public BindableCollection<ImageViewModel> Images { get; private set; }
+
+        public ImageViewModel SelectedImage
+        {
+            get { return _selectedImage; }
+            set
+            {
+                _selectedImage = value;
+                NotifyOfPropertyChange(() => SelectedImage);
+            }
+        }
+
+        public void AddRange(IEnumerable<string> filePaths)
         {
             var images = filePaths.Select(path => new ImageViewModel(path, _imagesCache)).ToList();
             Images.AddRange(images);
@@ -55,27 +58,35 @@ namespace ImagesViewer.ViewModels
 
         public void ReloadCache()
         {
-            _imagesCache.ReloadImages(_availableHolders);
+            _imagesCache.ReloadPreviewImages(_visibleImages);
+        }
+
+        public bool HasVisibleScroll
+        {
+            set 
+            {
+               _imagesCache.ShowAllPreviewImages = value;
+               if (!value)
+               {
+                   _visibleImages = Images.ToList();
+                   _imagesCache.LoadImages(_visibleImages);
+               }
+            }
         }
 
         public Range VisibleItemsRange
         {
             set
             {
-                if (value != null)
-                    ReInvalidateImagesCache(value);
+                if (value != null && _imagesCache.ShowAllPreviewImages)
+                {
+                    _visibleImages = Images.Skip(value.Index).Take(value.Count).ToList();
+                    _imagesCache.LeaveOnlyImages(_visibleImages);
+                }
             }
         }
 
-        private void ReInvalidateImagesCache(Range value)
-        {
-            _availableHolders = Images.Skip(value.Index).Take(value.Count).ToList();
-            if (value.Index == 0 && value.Count == Images.Count)
-                return;
-            _imagesCache.LeaveImagesOnlyIn(_availableHolders);
-        }
-
-        private List<ImageViewModel> _availableHolders;
+        private List<ImageViewModel> _visibleImages;
         private ImageViewModel _selectedImage;
         private IEventAggregator _eventAggregator;
         private ImagesCache _imagesCache;

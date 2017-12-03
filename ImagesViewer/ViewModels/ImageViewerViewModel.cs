@@ -11,7 +11,16 @@ namespace ImagesViewer.ViewModels
 {
     public class ImageViewerViewModel : Screen, ICancellable
     {
+        public ImageViewerViewModel(IEventAggregator eventAggregator,
+            BindableCollection<ImageViewModel> images, ImagesCache imagesCacheHolder)
+        {
+            Images = images;
+            _imagesCache = imagesCacheHolder;
+            _eventAggregator = eventAggregator;
+        }
+
         public BindableCollection<ImageViewModel> Images { get; private set; }
+
         public ImageViewModel SelectedImage
         {
             get { return _selectedImage; }
@@ -20,20 +29,12 @@ namespace ImagesViewer.ViewModels
                 if (_selectedImage != null && !ReferenceEquals(_selectedImage, value))
                 {
                     _selectedImage.ViewMode = Models.ViewMode.Preview;
-                    _imagesCache.RemoveImageFor(_selectedImage.Path);
+                    _imagesCache.RemoveImage(_selectedImage);
                 }
                 _selectedImage = value;
                 _selectedImage.ViewMode = Models.ViewMode.Full;
                 NotifyOfPropertyChange(() => SelectedImage);
             }
-        }
-
-        public ImageViewerViewModel(IEventAggregator eventAggregator,
-            BindableCollection<ImageViewModel> images, ImagesCache imagesCacheHolder)
-        {
-            Images = images;
-            _imagesCache = imagesCacheHolder;
-            _eventAggregator = eventAggregator;
         }
 
         public void Cancel()
